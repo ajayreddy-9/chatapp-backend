@@ -56,7 +56,10 @@ chatRouter.post("/:chatId", async (req, res) => {
       message.chatId = chatId;
     }
     const response = await new Message(message).save();
-
+    const updateResponse = await Chat.findByIdAndUpdate(chatId, {
+      lastMessage: response._id,
+    });
+    // console.log(updateResponse);
     res.send(response);
   } catch (err) {
     console.log(err);

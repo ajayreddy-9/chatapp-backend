@@ -32,25 +32,6 @@ userRouter.post("/create", async (req, res) => {
 userRouter.get("/:userId/chats", async (req, res) => {
   try {
     let { userId } = req.params;
-    // userId = new mongoose.Types.ObjectId(userId);
-    // const chats = await Chat.aggregate([
-    //   {
-    //     $match: {
-    //       $or: [{ user1: userId }, { user2: userId }],
-    //     },
-    //   },
-    //   {
-    //     $project: {
-    //       receiver: {
-    //         $cond: {
-    //           if: { $eq: ["$user1", userId] },
-    //           then: "$user2",
-    //           else: "$user1",
-    //         },
-    //       },
-    //     },
-    //   },
-    // ]).populate("receiver");
     const data = await Chat.find({
       $or: [{ user1: userId }, { user2: userId }],
     })
@@ -58,7 +39,7 @@ userRouter.get("/:userId/chats", async (req, res) => {
       .populate({ path: "user2", select: "_id name" })
       .populate("lastMessage");
     const chats = data.map((item) => {
-      const newChat = { chatId: item._id };
+      const newChat = { chatId: item._id, lastMessage: item.lastMessage };
       if (item.user1._id.toString() === userId) {
         newChat.receiver = item.user2;
       } else {
