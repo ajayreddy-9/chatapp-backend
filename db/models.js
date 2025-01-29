@@ -29,10 +29,6 @@ const chatSchema = new mongoose.Schema({
     ref: User,
     required: true,
   },
-  lastMessage: {
-    type: mongoose.Types.ObjectId,
-    ref: "Message",
-  },
 });
 export const Chat = mongoose.model("Chat", chatSchema);
 
@@ -48,7 +44,7 @@ const messageSchema = new mongoose.Schema(
       ref: Chat,
       required: true,
     },
-    text: {
+    content: {
       type: String,
       required: true,
     },

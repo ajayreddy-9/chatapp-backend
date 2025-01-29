@@ -1,5 +1,6 @@
 import express from "express";
 import { Chat, Message } from "../db/models.js";
+import { ObjectId } from "mongodb";
 const chatRouter = express.Router();
 
 chatRouter.get("/", async (req, res) => {
@@ -54,8 +55,9 @@ chatRouter.post("/:chatId", async (req, res) => {
     if (!message.chatId) {
       message.chatId = chatId;
     }
-    const messages = await new Message(message).save();
-    res.send(messages);
+    const response = await new Message(message).save();
+
+    res.send(response);
   } catch (err) {
     console.log(err);
     res.status(500).send("Error sending Message.");
