@@ -35,6 +35,56 @@ chatRouter.post("/create", async (req, res) => {
 //   }
 // });
 
+chatRouter.get("/getchat", async (req, res) => {
+  try {
+    const { sender, receiver } = req.body;
+    const data = await Chat.findOne({
+      $or: [
+        { $and: [{ user1: sender }, { user2: receiver }] },
+        { $and: [{ user1: receiver }, { user2: sender }] },
+      ],
+    })
+      .populate({
+        path: "user1",
+        select: "_id name deleted",
+      })
+      .populate({
+        path: "user2",
+        select: "_id name deleted",
+      })
+      .populate("lastMessage");
+    let chatDetails = data;
+    if (data === null) {
+      const newchat = { user1: sender, user2: receiver };
+      const result = await new Chat(newchat).save();
+      chatDetails = await Chat.findById(result._id)
+        .populate({
+          path: "user1",
+          select: "_id name deleted",
+        })
+        .populate({
+          path: "user2",
+          select: "_id name deleted",
+        })
+        .populate("lastMessage");
+    }
+
+    const chat = {
+      chatId: chatDetails._id,
+      lastMessage: chatDetails.lastMessage,
+    };
+    if (chatDetails.user1._id.toString() === sender) {
+      chat.receiver = chatDetails.user2;
+    } else {
+      chat.receiver = chatDetails.user1;
+    }
+    res.send(chat);
+  } catch (err) {
+    console.log(err);
+    res.status(500).send("Error Fetching Chatdetails.");
+  }
+});
+
 chatRouter.get("/:chatId", async (req, res) => {
   try {
     const { chatId } = req.params;
@@ -66,6 +116,7 @@ chatRouter.post("/:chatId", async (req, res) => {
     res.status(500).send("Error sending Message.");
   }
 });
+
 export default chatRouter;
 
 // 6798d7a6954a33c6cc4b33dc ajay
