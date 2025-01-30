@@ -3,15 +3,15 @@ import { Chat, Message } from "../db/models.js";
 import { ObjectId } from "mongodb";
 const chatRouter = express.Router();
 
-chatRouter.get("/", async (req, res) => {
-  try {
-    const chats = await Chat.find().populate("user1 user2 lastMessage");
-    res.send(chats);
-  } catch (err) {
-    console.log(err);
-    res.status(500).send("Error Fetching chats");
-  }
-});
+// chatRouter.get("/", async (req, res) => {
+//   try {
+//     const chats = await Chat.find();
+//     res.send(chats);
+//   } catch (err) {
+//     console.log(err);
+//     res.status(500).send("Error Fetching chats");
+//   }
+// });
 
 chatRouter.post("/create", async (req, res) => {
   try {
@@ -23,17 +23,6 @@ chatRouter.post("/create", async (req, res) => {
     res.status(500).send("Error creating new chat.");
   }
 });
-
-// chatRouter.post("/message", async (req, res) => {
-//   try {
-//     const message = req.body;
-//     await new Message(message).save();
-//     res.status(201).send();
-//   } catch (err) {
-//     console.log(err);
-//     res.status(500).send("Error sending message.");
-//   }
-// });
 
 chatRouter.get("/:chatId", async (req, res) => {
   try {

@@ -5,8 +5,7 @@ const userRouter = express.Router();
 
 userRouter.get("/", async (req, res) => {
   try {
-    const { deleted = false } = req.query;
-    const users = await User.find({ deleted: deleted });
+    const users = await User.find();
     res.send(users);
   } catch (err) {
     console.log(err);
@@ -30,43 +29,14 @@ userRouter.post("/create", async (req, res) => {
   }
 });
 
-userRouter.put("/update/:userId", async (req, res) => {
-  try {
-    const { userId } = req.params;
-    const updatedUser = req.body;
-    await User.findByIdAndUpdate(userId, updatedUser);
-    res.send("User details updated successfully.");
-  } catch (err) {
-    console.log(err);
-    res.status(500).send(err || "Error updating User.");
-  }
-});
-
-userRouter.delete("/delete/:userId", async (req, res) => {
-  try {
-    const { userId } = req.params;
-    await User.findByIdAndUpdate(userId, { deleted: true });
-    res.send("User deleted successfully.");
-  } catch (err) {
-    console.log(err);
-    res.status(500).send(err || "Error deleting User.");
-  }
-});
-
 userRouter.get("/:userId/chats", async (req, res) => {
   try {
     let { userId } = req.params;
     const data = await Chat.find({
       $or: [{ user1: userId }, { user2: userId }],
     })
-      .populate({
-        path: "user1",
-        select: "_id name deleted",
-      })
-      .populate({
-        path: "user2",
-        select: "_id name deleted",
-      })
+      .populate({ path: "user1", select: "_id name" })
+      .populate({ path: "user2", select: "_id name" })
       .populate("lastMessage");
     const chats = data.map((item) => {
       const newChat = { chatId: item._id, lastMessage: item.lastMessage };

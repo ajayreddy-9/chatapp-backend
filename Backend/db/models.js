@@ -15,10 +15,6 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  deleted: {
-    type: Boolean,
-    default: false,
-  },
 });
 export const User = mongoose.model("User", userSchema);
 
