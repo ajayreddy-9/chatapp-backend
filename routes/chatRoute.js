@@ -119,13 +119,8 @@ chatRouter.post("/:chatId", async (req, res) => {
 
 export default chatRouter;
 
-// 6798d7a6954a33c6cc4b33dc ajay
-// 6798d7be954a33c6cc4b33e0 chandu
-// 6798d7d4954a33c6cc4b33e3 sathvika
-// 6798d8c1450b54500b771849 vamshi
-
-//ajay user1
-// other user2
-// 6798dbf415724bf6510989ed chandu
-// 6798dc0115724bf6510989ef sathvika
-// 6798dc0815724bf6510989f1 vamshi
+// 679b4fdc0e6c3ab0a94894ef ajay
+// 679b51aa0e6c3ab0a9489509 sathvika
+// 679b51e70e6c3ab0a948950f varsha
+// 679b52930e6c3ab0a9489517 shiva
+// 679b52b60e6c3ab0a948951b vishnu

@@ -22,22 +22,26 @@ const userSchema = new mongoose.Schema({
 });
 export const User = mongoose.model("User", userSchema);
 
-const chatSchema = new mongoose.Schema({
-  user1: {
-    type: mongoose.Types.ObjectId,
-    ref: User,
-    required: true,
+const chatSchema = new mongoose.Schema(
+  {
+    user1: {
+      type: mongoose.Types.ObjectId,
+      ref: User,
+      required: true,
+    },
+    user2: {
+      type: mongoose.Types.ObjectId,
+      ref: User,
+      required: true,
+    },
+    lastMessage: {
+      type: mongoose.Types.ObjectId,
+      ref: "Message",
+    },
+    blockedBy: [{ type: mongoose.Types.ObjectId, ref: "User" }],
   },
-  user2: {
-    type: mongoose.Types.ObjectId,
-    ref: User,
-    required: true,
-  },
-  lastMessage: {
-    type: mongoose.Types.ObjectId,
-    ref: "Message",
-  },
-});
+  { timestamps: true }
+);
 export const Chat = mongoose.model("Chat", chatSchema);
 
 const messageSchema = new mongoose.Schema(
