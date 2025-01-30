@@ -69,8 +69,13 @@ userRouter.get("/:userId/chats", async (req, res) => {
         select: "_id name deleted",
       })
       .populate("lastMessage");
+    // console.log(data);
     const chats = data.map((item) => {
-      const newChat = { chatId: item._id, lastMessage: item.lastMessage };
+      const newChat = {
+        chatId: item._id,
+        lastMessage: item.lastMessage,
+        blockedBy: item.blockedBy,
+      };
       if (item.user1._id.toString() === userId) {
         newChat.receiver = item.user2;
       } else {
@@ -78,6 +83,8 @@ userRouter.get("/:userId/chats", async (req, res) => {
       }
       if (item?.blockedBy?.length > 0) {
         newChat.blockedStatus = true;
+      } else {
+        newChat.blockedStatus = false;
       }
       return newChat;
     });
