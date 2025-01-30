@@ -35,7 +35,7 @@ chatRouter.post("/create", async (req, res) => {
 //   }
 // });
 
-chatRouter.get("/getchat", async (req, res) => {
+chatRouter.post("/getchat", async (req, res) => {
   try {
     const { sender, receiver } = req.body;
     const data = await Chat.findOne({
