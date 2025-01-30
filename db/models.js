@@ -38,7 +38,9 @@ const chatSchema = new mongoose.Schema(
       type: mongoose.Types.ObjectId,
       ref: "Message",
     },
-    blockedBy: [{ type: mongoose.Types.ObjectId, ref: "User" }],
+    blockedBy: [
+      { type: mongoose.Schema.Types.ObjectId, ref: "User", default: [] },
+    ],
   },
   { timestamps: true }
 );

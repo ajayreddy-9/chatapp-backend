@@ -88,85 +88,119 @@ userRouter.get("/:userId/chats", async (req, res) => {
   }
 });
 
-userRouter.post("/:userId/block/:chatId/", async (req, res) => {
+// userRouter.post("/:userId/block/:chatId/", async (req, res) => {
+//   try {
+//     const { chatId, userId } = req.params;
+//     let data = await Chat.find(
+//       {
+//         $and: [
+//           { _id: chatId },
+//           { $or: [{ user1: userId }, { user2: userId }] },
+//         ],
+//       },
+//       { blockedBy: 1, _id: 0 }
+//     );
+//     const { blockedBy } = data[0];
+//     let prevBlockedList = [...blockedBy];
+//     let blocked = false;
+//     for (let index = 0; index < prevBlockedList.length; index++) {
+//       if (prevBlockedList[index].toString() === userId) {
+//         blocked = true;
+//         break;
+//       }
+//     }
+//     if (!blocked) {
+//       prevBlockedList = [...prevBlockedList, new ObjectId(userId)];
+//       data = await Chat.findByIdAndUpdate(
+//         chatId,
+//         {
+//           blockedBy: prevBlockedList,
+//         },
+//         { new: true }
+//       );
+//     }
+
+//     res.send(data);
+//   } catch (err) {
+//     console.log(err);
+//     res.status(500).send("Error blocking user.");
+//   }
+// });
+
+// userRouter.post("/:userId/unblock/:chatId/", async (req, res) => {
+//   try {
+//     const { chatId, userId } = req.params;
+//     let data = await Chat.find(
+//       {
+//         $and: [
+//           { _id: chatId },
+//           { $or: [{ user1: userId }, { user2: userId }] },
+//         ],
+//       },
+//       { blockedBy: 1, _id: 0 }
+//     );
+//     const { blockedBy } = data[0];
+//     let prevBlockedList = [...blockedBy];
+//     let blocked = -1;
+//     for (let index = 0; index < prevBlockedList.length; index++) {
+//       if (prevBlockedList[index].toString() === userId) {
+//         blocked = index;
+//         break;
+//       }
+//     }
+//     console.log(prevBlockedList);
+//     if (blocked !== -1) {
+//       prevBlockedList = [
+//         ...prevBlockedList.slice(0, blocked),
+//         ...prevBlockedList.slice(blocked + 1),
+//       ];
+//       console.log(prevBlockedList, blocked);
+//       data = await Chat.findByIdAndUpdate(
+//         chatId,
+//         {
+//           blockedBy: prevBlockedList,
+//         },
+//         { new: true }
+//       );
+//     }
+
+//     res.send(data);
+//   } catch (err) {
+//     console.log(err);
+//     res.status(500).send("Error unblocking user.");
+//   }
+// });
+
+userRouter.post("/:userId/block/:chatId", async (req, res) => {
   try {
     const { chatId, userId } = req.params;
-    let data = await Chat.find(
-      {
-        $and: [
-          { _id: chatId },
-          { $or: [{ user1: userId }, { user2: userId }] },
-        ],
-      },
-      { blockedBy: 1, _id: 0 }
-    );
-    const { blockedBy } = data[0];
-    let prevBlockedList = [...blockedBy];
-    let blocked = false;
-    for (let index = 0; index < prevBlockedList.length; index++) {
-      if (prevBlockedList[index].toString() === userId) {
-        blocked = true;
-        break;
-      }
-    }
-    if (!blocked) {
-      prevBlockedList = [...prevBlockedList, new ObjectId(userId)];
-      data = await Chat.findByIdAndUpdate(
-        chatId,
-        {
-          blockedBy: prevBlockedList,
-        },
-        { new: true }
-      );
-    }
 
-    res.send(data);
+    const updatedChat = await Chat.findByIdAndUpdate(
+      chatId,
+      { $addToSet: { blockedBy: new ObjectId(userId) } },
+      { new: true, select: "blockedBy" }
+    );
+
+    res.send(updatedChat);
   } catch (err) {
-    console.log(err);
+    console.error(err);
     res.status(500).send("Error blocking user.");
   }
 });
 
-userRouter.post("/:userId/unblock/:chatId/", async (req, res) => {
+userRouter.post("/:userId/unblock/:chatId", async (req, res) => {
   try {
     const { chatId, userId } = req.params;
-    let data = await Chat.find(
-      {
-        $and: [
-          { _id: chatId },
-          { $or: [{ user1: userId }, { user2: userId }] },
-        ],
-      },
-      { blockedBy: 1, _id: 0 }
-    );
-    const { blockedBy } = data[0];
-    let prevBlockedList = [...blockedBy];
-    let blocked = -1;
-    for (let index = 0; index < prevBlockedList.length; index++) {
-      if (prevBlockedList[index].toString() === userId) {
-        blocked = index;
-        break;
-      }
-    }
-    console.log(prevBlockedList);
-    if (blocked !== -1) {
-      prevBlockedList = [
-        ...prevBlockedList.slice(0, blocked),
-        ...prevBlockedList.slice(blocked + 1),
-      ];
-      console.log(prevBlockedList, blocked);
-      data = await Chat.findByIdAndUpdate(
-        chatId,
-        {
-          blockedBy: prevBlockedList,
-        },
-        { new: true }
-      );
-    }
 
-    res.send(data);
+    const updatedChat = await Chat.findByIdAndUpdate(
+      chatId,
+      { $pull: { blockedBy: new ObjectId(userId) } },
+      { new: true, select: "blockedBy" }
+    );
+
+    res.send(updatedChat);
   } catch (err) {
-    console.log(err);
+    console.error(err);
     res.status(500).send("Error unblocking user.");
   }
 });
