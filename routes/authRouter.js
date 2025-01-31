@@ -53,7 +53,7 @@ authRouter.post("/signin", async (req, res) => {
         phone: phone,
       };
       const jwtToken = jwt.sign(payload, process.env.JWTSECRETKEY);
-      res.cookie("userToken2", jwtToken, { path: "/auth/getuser" });
+      res.cookie("userToken2", jwtToken, {});
       res.send({ jwtToken });
     } else {
       res.send("Password Not Matched");
