@@ -3,6 +3,7 @@ import cors from "cors";
 import "dotenv/config";
 import userRouter from "./routes/userRoute.js";
 import chatRouter from "./routes/chatRoute.js";
+import authRouter from "./routes/authRouter.js";
 
 const app = express();
 app.use(cors());
@@ -10,6 +11,7 @@ app.use(express.json());
 
 app.use("/users", userRouter);
 app.use("/chats", chatRouter);
+app.use("/auth/", authRouter);
 
 app.use("/ping", (req, res) => {
   try {

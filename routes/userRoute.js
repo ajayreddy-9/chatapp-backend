@@ -2,6 +2,8 @@ import express from "express";
 import { Chat, User } from "../db/models.js";
 import mongoose from "mongoose";
 import { ObjectId } from "mongodb";
+import { authenticateToken } from "./authRouter.js";
+
 const userRouter = express.Router();
 
 userRouter.get("/", async (req, res) => {
@@ -16,19 +18,20 @@ userRouter.get("/", async (req, res) => {
 });
 
 userRouter.post("/create", async (req, res) => {
-  try {
-    const user = req.body;
-    const dbUser = await User.exists({ phone: user.phone });
-    if (dbUser) {
-      res.status(400).send("An user with the same phone number exists");
-    } else {
-      await new User(user).save();
-      res.status(201).send("User Created Successfully");
-    }
-  } catch (err) {
-    console.log(err);
-    res.status(500).send(err || "Error creating User.");
-  }
+  res.send("This path is change to /auth/signup");
+  // try {
+  //   const user = req.body;
+  //   const dbUser = await User.exists({ phone: user.phone });
+  //   if (dbUser) {
+  //     res.status(400).send("An user with the same phone number exists");
+  //   } else {
+  //     await new User(user).save();
+  //     res.status(201).send("User Created Successfully");
+  //   }
+  // } catch (err) {
+  //   console.log(err);
+  //   res.status(500).send(err || "Error creating User.");
+  // }
 });
 
 userRouter.put("/update/:userId", async (req, res) => {
