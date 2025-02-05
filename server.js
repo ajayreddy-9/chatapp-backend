@@ -4,16 +4,20 @@ import "dotenv/config";
 import userRouter from "./routes/userRoute.js";
 import chatRouter from "./routes/chatRoute.js";
 import authRouter from "./routes/authRouter.js";
+import http from "http";
+import { getIo, initializeSocket } from "./socket.js";
 
 const app = express();
+const server = http.createServer(app);
+initializeSocket(server);
+
 app.use(cors({ credentials: true, methods: ["GET", "POST", "PUT", "DELETE"] }));
 app.use(express.json());
-
 app.use("/users", userRouter);
 app.use("/chats", chatRouter);
 app.use("/auth/", authRouter);
 
-app.use("/ping", (req, res) => {
+app.get("/ping", (req, res) => {
   try {
     console.log("ping");
     res.send("Pinging");
@@ -23,9 +27,9 @@ app.use("/ping", (req, res) => {
   }
 });
 
-app.listen(process.env.PORT || 3000, () => {
-  console.log("server started at http://localhost:3000");
+server.listen(process.env.PORT || 3000, () => {
+  console.log(`server started at http://localhost:${process.env.PORT || 3000}`);
   setInterval(async () => {
-    await fetch("https://chatapp-backend-isfi.onrender.com/ping");
+    await fetch(`${process.env.HOST_URI}/ping`);
   }, 300000);
 });

@@ -1,6 +1,7 @@
 import express from "express";
 import { Chat, Message } from "../db/models.js";
 import { ObjectId } from "mongodb";
+import { getIo, getSocketIdOfUser } from "../socket.js";
 const chatRouter = express.Router();
 
 chatRouter.get("/", async (req, res) => {
@@ -23,17 +24,6 @@ chatRouter.post("/create", async (req, res) => {
     res.status(500).send("Error creating new chat.");
   }
 });
-
-// chatRouter.post("/message", async (req, res) => {
-//   try {
-//     const message = req.body;
-//     await new Message(message).save();
-//     res.status(201).send();
-//   } catch (err) {
-//     console.log(err);
-//     res.status(500).send("Error sending message.");
-//   }
-// });
 
 chatRouter.post("/getchat", async (req, res) => {
   try {
@@ -101,7 +91,13 @@ chatRouter.get("/:chatId", async (req, res) => {
 chatRouter.post("/:chatId", async (req, res) => {
   try {
     const { chatId } = req.params;
-    const message = req.body;
+
+    const { receiverId } = req.body;
+    const message = {
+      chatId: chatId,
+      sender: req.body.sender,
+      content: req.body.content,
+    };
     if (!message.chatId) {
       message.chatId = chatId;
     }
@@ -109,7 +105,13 @@ chatRouter.post("/:chatId", async (req, res) => {
     const updateResponse = await Chat.findByIdAndUpdate(chatId, {
       lastMessage: response._id,
     });
-    // console.log(updateResponse);
+
+    const io = getIo();
+    const socketId = getSocketIdOfUser(receiverId);
+    if (socketId !== null) {
+      io.to(socketId).emit("receiveMessage");
+      // console.log("sent receivemessage from socket io");
+    }
     res.send(response);
   } catch (err) {
     console.log(err);
@@ -118,9 +120,3 @@ chatRouter.post("/:chatId", async (req, res) => {
 });
 
 export default chatRouter;
-
-// 679b4fdc0e6c3ab0a94894ef ajay
-// 679b51aa0e6c3ab0a9489509 sathvika
-// 679b51e70e6c3ab0a948950f varsha
-// 679b52930e6c3ab0a9489517 shiva
-// 679b52b60e6c3ab0a948951b vishnu

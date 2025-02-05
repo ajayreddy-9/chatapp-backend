@@ -62,6 +62,7 @@ userRouter.get("/:userId/chats", async (req, res) => {
     let { userId } = req.params;
     const data = await Chat.find({
       $or: [{ user1: userId }, { user2: userId }],
+      lastMessage: { $exists: true },
     })
       .populate({
         path: "user1",
@@ -71,7 +72,16 @@ userRouter.get("/:userId/chats", async (req, res) => {
         path: "user2",
         select: "_id name deleted",
       })
-      .populate("lastMessage");
+      .populate("lastMessage")
+      .sort({
+        "lastMessage.createdAt": -1,
+      });
+
+    data.sort(
+      (a, b) =>
+        new Date(b.lastMessage?.createdAt || 0) -
+        new Date(a.lastMessage?.createdAt || 0)
+    );
     // console.log(data);
     const chats = data.map((item) => {
       const newChat = {
@@ -98,6 +108,41 @@ userRouter.get("/:userId/chats", async (req, res) => {
   }
 });
 
+userRouter.post("/:userId/block/:chatId", async (req, res) => {
+  try {
+    const { chatId, userId } = req.params;
+
+    const updatedChat = await Chat.findByIdAndUpdate(
+      chatId,
+      { $addToSet: { blockedBy: new ObjectId(userId) } },
+      { new: true, select: "blockedBy" }
+    );
+
+    res.send(updatedChat);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Error blocking user.");
+  }
+});
+
+userRouter.post("/:userId/unblock/:chatId", async (req, res) => {
+  try {
+    const { chatId, userId } = req.params;
+
+    const updatedChat = await Chat.findByIdAndUpdate(
+      chatId,
+      { $pull: { blockedBy: new ObjectId(userId) } },
+      { new: true, select: "blockedBy" }
+    );
+
+    res.send(updatedChat);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Error unblocking user.");
+  }
+});
+
+export default userRouter;
 // userRouter.post("/:userId/block/:chatId/", async (req, res) => {
 //   try {
 //     const { chatId, userId } = req.params;
@@ -180,39 +225,3 @@ userRouter.get("/:userId/chats", async (req, res) => {
 //     res.status(500).send("Error unblocking user.");
 //   }
 // });
-
-userRouter.post("/:userId/block/:chatId", async (req, res) => {
-  try {
-    const { chatId, userId } = req.params;
-
-    const updatedChat = await Chat.findByIdAndUpdate(
-      chatId,
-      { $addToSet: { blockedBy: new ObjectId(userId) } },
-      { new: true, select: "blockedBy" }
-    );
-
-    res.send(updatedChat);
-  } catch (err) {
-    console.error(err);
-    res.status(500).send("Error blocking user.");
-  }
-});
-
-userRouter.post("/:userId/unblock/:chatId", async (req, res) => {
-  try {
-    const { chatId, userId } = req.params;
-
-    const updatedChat = await Chat.findByIdAndUpdate(
-      chatId,
-      { $pull: { blockedBy: new ObjectId(userId) } },
-      { new: true, select: "blockedBy" }
-    );
-
-    res.send(updatedChat);
-  } catch (err) {
-    console.error(err);
-    res.status(500).send("Error unblocking user.");
-  }
-});
-
-export default userRouter;

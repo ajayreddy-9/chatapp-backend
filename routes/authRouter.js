@@ -78,7 +78,7 @@ export const authenticateToken = (req, res, next) => {
       if (error) {
         return res.status(401).send("Invalid access token.");
       } else {
-        console.log(payload);
+        // console.log(payload);
         req.phone = payload.phone;
         next();
       }
