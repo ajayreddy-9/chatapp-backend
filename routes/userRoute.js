@@ -8,8 +8,19 @@ const userRouter = express.Router();
 
 userRouter.get("/", async (req, res) => {
   try {
-    const { deleted = false } = req.query;
-    const users = await User.find({ deleted: deleted });
+    const { deleted = false, searchQuery = "" } = req.query;
+
+    const offset = parseInt(req.query.offset) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (offset - 1) * limit;
+
+    const updatedSearchQuery = new RegExp(searchQuery, "i");
+    const users = await User.find({
+      deleted: deleted,
+      name: { $regex: updatedSearchQuery },
+    })
+      .skip(skip)
+      .limit(limit);
     res.send(users);
   } catch (err) {
     console.log(err);
@@ -60,6 +71,11 @@ userRouter.delete("/delete/:userId", async (req, res) => {
 userRouter.get("/:userId/chats", async (req, res) => {
   try {
     let { userId } = req.params;
+    const { searchQuery = "" } = req.query;
+    const offset = parseInt(req.query.offset) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (offset - 1) * limit;
+    const count = limit * offset;
     const data = await Chat.find({
       $or: [{ user1: userId }, { user2: userId }],
       lastMessage: { $exists: true },
@@ -74,32 +90,36 @@ userRouter.get("/:userId/chats", async (req, res) => {
       })
       .populate("lastMessage")
       .sort({
-        "lastMessage.createdAt": -1,
-      });
-
-    data.sort(
-      (a, b) =>
-        new Date(b.lastMessage?.createdAt || 0) -
-        new Date(a.lastMessage?.createdAt || 0)
+        updatedAt: -1,
+      })
+      .limit(count);
+    const filteredData = data.filter(
+      (chat) =>
+        (chat.user1 && chat.user1.name.match(new RegExp(searchQuery, "i"))) ||
+        (chat.user2 && chat.user2.name.match(new RegExp(searchQuery, "i")))
     );
-    // console.log(data);
-    const chats = data.map((item) => {
+
+    // console.log(filteredData);
+
+    const chats = filteredData.map((item) => {
       const newChat = {
-        chatId: item._id,
+        chatId: item?._id,
         lastMessage: item.lastMessage,
         blockedBy: item.blockedBy,
       };
-      if (item.user1._id.toString() === userId) {
-        newChat.receiver = item.user2;
-      } else {
-        newChat.receiver = item.user1;
+      if (item?.user1 && item?.user2) {
+        if (item?.user1?._id.toString() === userId) {
+          newChat.receiver = item?.user2;
+        } else {
+          newChat.receiver = item?.user1;
+        }
+        if (item?.blockedBy?.length > 0) {
+          newChat.blockedStatus = true;
+        } else {
+          newChat.blockedStatus = false;
+        }
+        return newChat;
       }
-      if (item?.blockedBy?.length > 0) {
-        newChat.blockedStatus = true;
-      } else {
-        newChat.blockedStatus = false;
-      }
-      return newChat;
     });
     res.send(chats);
   } catch (err) {
