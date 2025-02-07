@@ -29,7 +29,7 @@ userRouter.get("/", async (req, res) => {
 });
 
 userRouter.post("/create", async (req, res) => {
-  res.send("This path is change to /auth/signup");
+  res.send("This path is changed to /auth/signup");
   // try {
   //   const user = req.body;
   //   const dbUser = await User.exists({ phone: user.phone });
@@ -92,6 +92,7 @@ userRouter.get("/:userId/chats", async (req, res) => {
       .sort({
         updatedAt: -1,
       })
+      .skip(skip)
       .limit(count);
     const filteredData = data.filter(
       (chat) =>
